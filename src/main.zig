@@ -1,13 +1,23 @@
 const std = @import("std");
 const rl = @import("./raylib.zig");
 
-pub fn fix_zero(x: f32) f32 {
+fn v3_abs(v: rl.Vector3) rl.Vector3 {
+    var v2: rl.Vector3 = undefined;
+
+    v2.x = @abs(v.x);
+    v2.y = @abs(v.y);
+    v2.z = @abs(v.z);
+
+    return v2;
+}
+
+fn fix_zero(x: f32) f32 {
     const err = 1e-7;
     if (-err < x and x < err) return 0;
     return x;
 }
 
-pub fn v3_rotate_z(v: rl.Vector3, angle: f32) rl.Vector3 {
+fn v3_rotate_z(v: rl.Vector3, angle: f32) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
     v2.x = fix_zero(v.x * @cos(angle) - v.y * @sin(angle));
@@ -17,7 +27,7 @@ pub fn v3_rotate_z(v: rl.Vector3, angle: f32) rl.Vector3 {
     return v2;
 }
 
-pub fn v3_rotate_y(v: rl.Vector3, angle: f32) rl.Vector3 {
+fn v3_rotate_y(v: rl.Vector3, angle: f32) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
     v2.x = fix_zero(v.x * @cos(angle) - v.z * @sin(angle));
@@ -27,7 +37,7 @@ pub fn v3_rotate_y(v: rl.Vector3, angle: f32) rl.Vector3 {
     return v2;
 }
 
-pub fn v3_rotate_x(v: rl.Vector3, angle: f32) rl.Vector3 {
+fn v3_rotate_x(v: rl.Vector3, angle: f32) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
     v2.x = v.x;
@@ -35,6 +45,19 @@ pub fn v3_rotate_x(v: rl.Vector3, angle: f32) rl.Vector3 {
     v2.z = fix_zero(v.y * @sin(angle) + v.z * @cos(angle));
 
     return v2;
+}
+
+fn draw_rotated_cube(
+    at: rl.Vector3,
+    axis: rl.Vector3,
+    sz: rl.Vector3,
+    ang: f32, c: rl.Color) void
+{
+    rl.push_matrix();
+    rl.rotatef(ang * 180 / std.math.pi, axis.x, axis.y, axis.z);
+    rl.translatef(at.x, at.y, at.z);
+    rl.draw_cube(rl.make_v3(0, 0, 0), sz.x, sz.y, sz.z, c);
+    rl.pop_matrix();
 }
 
 const Face = struct {
@@ -88,9 +111,33 @@ const Faces = union(enum) {
     }
 };
 
+const Axis = enum {
+    X,
+    Y,
+    Z
+};
+
+const Animation = struct {
+    active: bool,
+    angle: f32,
+    target_angle: f32,
+    axis: Axis,
+
+    fn init() Animation {
+        return Animation {
+            .active = false,
+            .angle = 0,
+            .target_angle = 0,
+            .axis = Axis.X,
+        };
+    }
+};
+
 const Cube = struct {
     position: rl.Vector3,
     faces: Faces,
+
+    animation: Animation,
 
     fn rotate_x(cube: *Cube, ang: f32) void {
         cube.position = v3_rotate_x(cube.position, ang);
@@ -149,6 +196,113 @@ const Cube = struct {
                 fs[2].direction = v3_rotate_z(fs[2].direction, ang);
             },
             else => {},
+        }
+    }
+
+    fn draw(cube: Cube) void {
+        if (cube.animation.active) {
+            const axis =
+                switch (cube.animation.axis) {
+                    .X => rl.make_v3(1, 0, 0),
+                    .Y => rl.make_v3(0, -1, 0),
+                    .Z => rl.make_v3(0, 0, 1),
+                };
+
+            const s = rl.make_v3(2.0, 2.0, 2.0);
+            draw_rotated_cube(cube.position, axis, s, cube.animation.angle, rl.Black);
+        } else {
+            rl.draw_cube(cube.position, 2.0, 2.0, 2.0, rl.Black);
+        }
+        // rl.draw_cube_wires(position, 2.0, 2.0, 2.0, rl.Black);
+
+        const face_sz = rl.make_v3(1.6, 1.6, 1.6);
+        const factor = -1.5;
+
+        switch (cube.faces) {
+            .one => |f| {
+                const p = rl.v3_add(cube.position, f.direction);
+                const n = v3_abs(f.direction);
+                const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
+
+                if (cube.animation.active) {
+                    const axis =
+                        switch (cube.animation.axis) {
+                            .X => rl.make_v3(1, 0, 0),
+                            .Y => rl.make_v3(0, -1, 0),
+                            .Z => rl.make_v3(0, 0, 1),
+                        };
+
+                    draw_rotated_cube(p, axis, s, cube.animation.angle, f.color);
+                } else {
+                    rl.draw_cube(p, s.x, s.y, s.z, f.color);
+                }
+            },
+            .two => |fs| {
+                for (fs) |f| {
+                    const p = rl.v3_add(cube.position, f.direction);
+                    const n = v3_abs(f.direction);
+                    const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
+
+                    if (cube.animation.active) {
+                        const axis =
+                            switch (cube.animation.axis) {
+                                .X => rl.make_v3(1, 0, 0),
+                                .Y => rl.make_v3(0, -1, 0),
+                                .Z => rl.make_v3(0, 0, 1),
+                            };
+
+                        draw_rotated_cube(p, axis, s, cube.animation.angle, f.color);
+                    } else {
+                        rl.draw_cube(p, s.x, s.y, s.z, f.color);
+                    }
+                }
+            },
+            .three => |fs| {
+                for (fs) |f| {
+                    const p = rl.v3_add(cube.position, f.direction);
+                    const n = v3_abs(f.direction);
+                    const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
+
+                    if (cube.animation.active) {
+                        const axis =
+                            switch (cube.animation.axis) {
+                                .X => rl.make_v3(1, 0, 0),
+                                .Y => rl.make_v3(0, -1, 0),
+                                .Z => rl.make_v3(0, 0, 1),
+                            };
+
+                        draw_rotated_cube(p, axis, s, cube.animation.angle, f.color);
+                    } else {
+                        rl.draw_cube(p, s.x, s.y, s.z, f.color);
+                    }
+                }
+            },
+            else => {},
+        }
+    }
+
+    fn begin_animation(cube: *Cube, angle: f32, axis: Axis) void {
+        if (!cube.animation.active) {
+            cube.animation.angle = 0;
+            cube.animation.target_angle = angle;
+            cube.animation.axis = axis;
+            cube.animation.active = true;
+        }
+    }
+
+    fn update_animation(cube: *Cube) void {
+        if (cube.animation.active) {
+            cube.animation.angle += cube.animation.target_angle * 4 / 60;
+
+            if (@abs(cube.animation.angle) >= @abs(cube.animation.target_angle)) {
+                cube.animation.active = false;
+
+                switch (cube.animation.axis) {
+                    .X => cube.rotate_x(cube.animation.target_angle),
+                    .Y => cube.rotate_y(cube.animation.target_angle),
+                    .Z => cube.rotate_z(cube.animation.target_angle),
+                }
+            }
         }
     }
 };
@@ -263,7 +417,11 @@ pub fn main() void {
                     (@as(f32, @floatFromInt(k)) - 1.0) * (size + gap),
                 );
 
-                cubes[pos] = Cube { .position = position, .faces = faces };
+                cubes[pos] = Cube {
+                    .position = position,
+                    .faces = faces,
+                    .animation = Animation.init(),
+                };
 
                 pos += 1;
             }
@@ -288,13 +446,13 @@ pub fn main() void {
                         const ang = std.math.pi / 2.0;
 
                         for (&cubes) |*cube| {
-                            cube.rotate_y(ang);
+                            cube.begin_animation(ang, Axis.Y);
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
                         const ang = -std.math.pi / 2.0;
 
                         for (&cubes) |*cube| {
-                            cube.rotate_y(ang);
+                            cube.begin_animation(ang, Axis.Y);
                         }
                     }
                 } else if (rl.is_key_down('A')) {
@@ -306,13 +464,13 @@ pub fn main() void {
                         const ang = std.math.pi / 2.0;
 
                         for (&cubes) |*cube| {
-                            cube.rotate_x(ang);
+                            cube.begin_animation(ang, Axis.X);
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
                         const ang = -std.math.pi / 2.0;
 
                         for (&cubes) |*cube| {
-                            cube.rotate_x(ang);
+                            cube.begin_animation(ang, Axis.X);
                         }
                     }
                 } else if (rl.is_key_down('Z')) {
@@ -324,63 +482,20 @@ pub fn main() void {
                         const ang = std.math.pi / 2.0;
 
                         for (&cubes) |*cube| {
-                            cube.rotate_z(ang);
+                            cube.begin_animation(ang, Axis.Z);
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
                         const ang = -std.math.pi / 2.0;
 
                         for (&cubes) |*cube| {
-                            cube.rotate_z(ang);
+                            cube.begin_animation(ang, Axis.Z);
                         }
                     }
                 }
 
-                for (cubes) |cube| {
-                    rl.draw_cube(cube.position, 2.0, 2.0, 2.0, rl.Black);
-                    // rl.draw_cube_wires(cube.position, 2.0, 2.0, 2.0, rl.Black);
-
-                    const face_sz = rl.make_v3(1.6, 1.6, 1.6);
-                    const factor = -1.5;
-                    // const face_sz = rl.make_v3(0.5, 0.5, 0.5);
-                    // const factor = -0.4;
-
-                    switch (cube.faces) {
-                        .one => |f| {
-                            const p = rl.v3_add(cube.position, f.direction);
-                            const n = rl.v3_scale(f.direction, f.direction);
-
-                            const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-                            rl.draw_cube(p, s.x, s.y, s.z, f.color);
-                        },
-                        .two => |fs| {
-                            var p = rl.v3_add(cube.position, fs[0].direction);
-                            var n = rl.v3_scale(fs[0].direction, fs[0].direction);
-                            var s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-                            rl.draw_cube(p, s.x, s.y, s.z, fs[0].color);
-
-                            p = rl.v3_add(cube.position, fs[1].direction);
-                            n = rl.v3_scale(fs[1].direction, fs[1].direction);
-                            s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-                            rl.draw_cube(p, s.x, s.y, s.z, fs[1].color);
-                        },
-                        .three => |fs| {
-                            var p = rl.v3_add(cube.position, fs[0].direction);
-                            var n = rl.v3_scale(fs[0].direction, fs[0].direction);
-                            var s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-                            rl.draw_cube(p, s.x, s.y, s.z, fs[0].color);
-
-                            p = rl.v3_add(cube.position, fs[1].direction);
-                            n = rl.v3_scale(fs[1].direction, fs[1].direction);
-                            s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-                            rl.draw_cube(p, s.x, s.y, s.z, fs[1].color);
-
-                            p = rl.v3_add(cube.position, fs[2].direction);
-                            n = rl.v3_scale(fs[2].direction, fs[2].direction);
-                            s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-                            rl.draw_cube(p, s.x, s.y, s.z, fs[2].color);
-                        },
-                        else => {},
-                    }
+                for (&cubes) |*cube| {
+                    cube.update_animation();
+                    cube.draw();
                 }
 
                 if (rl.is_key_down('V')) {
@@ -393,7 +508,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.z > 0) {
-                                cube.rotate_z(ang);
+                                cube.begin_animation(ang, Axis.Z);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -401,7 +516,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.z > 0) {
-                                cube.rotate_z(ang);
+                                cube.begin_animation(ang, Axis.Z);
                             }
                         }
                     }
@@ -415,7 +530,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.z == 0) {
-                                cube.rotate_z(ang);
+                                cube.begin_animation(ang, Axis.Z);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -423,7 +538,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.z == 0) {
-                                cube.rotate_z(ang);
+                                cube.begin_animation(ang, Axis.Z);
                             }
                         }
                     }
@@ -437,7 +552,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.z < 0) {
-                                cube.rotate_z(ang);
+                                cube.begin_animation(ang, Axis.Z);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -445,7 +560,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.z < 0) {
-                                cube.rotate_z(ang);
+                                cube.begin_animation(ang, Axis.Z);
                             }
                         }
                     }
@@ -459,7 +574,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.x < 0) {
-                                cube.rotate_x(ang);
+                                cube.begin_animation(ang, Axis.X);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -467,7 +582,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.x < 0) {
-                                cube.rotate_x(ang);
+                                cube.begin_animation(ang, Axis.X);
                             }
                         }
                     }
@@ -481,7 +596,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.x == 0) {
-                                cube.rotate_x(ang);
+                                cube.begin_animation(ang, Axis.X);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -489,7 +604,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.x == 0) {
-                                cube.rotate_x(ang);
+                                cube.begin_animation(ang, Axis.X);
                             }
                         }
                     }
@@ -503,7 +618,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.x > 0) {
-                                cube.rotate_x(ang);
+                                cube.begin_animation(ang, Axis.X);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -511,7 +626,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.x > 0) {
-                                cube.rotate_x(ang);
+                                cube.begin_animation(ang, Axis.X);
                             }
                         }
                     }
@@ -525,7 +640,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.y < 0) {
-                                cube.rotate_y(ang);
+                                cube.begin_animation(ang, Axis.Y);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -533,7 +648,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.y < 0) {
-                                cube.rotate_y(ang);
+                                cube.begin_animation(ang, Axis.Y);
                             }
                         }
                     }
@@ -547,7 +662,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.y == 0) {
-                                cube.rotate_y(ang);
+                                cube.begin_animation(ang, Axis.Y);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -555,7 +670,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.y == 0) {
-                                cube.rotate_y(ang);
+                                cube.begin_animation(ang, Axis.Y);
                             }
                         }
                     }
@@ -569,7 +684,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.y > 0) {
-                                cube.rotate_y(ang);
+                                cube.begin_animation(ang, Axis.Y);
                             }
                         }
                     } else if (rl.is_key_pressed(rl.KeyRight)) {
@@ -577,7 +692,7 @@ pub fn main() void {
 
                         for (&cubes) |*cube| {
                             if (cube.position.y > 0) {
-                                cube.rotate_y(ang);
+                                cube.begin_animation(ang, Axis.Y);
                             }
                         }
                     }

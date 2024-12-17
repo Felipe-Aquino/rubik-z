@@ -1,5 +1,6 @@
 const c = @cImport({
     @cInclude("raylib.h");
+    @cInclude("rlgl.h");
 });
 
 pub const Rectangle = c.Rectangle;
@@ -42,7 +43,6 @@ pub const draw_grid = c.DrawGrid;
 pub const draw_cylinder_ex = c.DrawCylinderEx;
 pub const draw_cylinder_wires_ex = c.DrawCylinderWiresEx;
 
-
 pub const begin_drawing = c.BeginDrawing;
 pub const end_drawing = c.EndDrawing;
 pub const clear_background =c.ClearBackground;
@@ -56,6 +56,12 @@ pub const KeyUp = c.KEY_UP;
 
 pub const is_key_pressed = c.IsKeyPressed;
 pub const is_key_down = c.IsKeyDown;
+
+// -- rlgl
+pub const push_matrix = c.rlPushMatrix;
+pub const pop_matrix = c.rlPopMatrix;
+pub const rotatef = c.rlRotatef;
+pub const translatef = c.rlTranslatef;
 
 pub fn make_rect(x: f32, y: f32, w: f32, h: f32) Rectangle {
     var rect: c.Rectangle = undefined;
