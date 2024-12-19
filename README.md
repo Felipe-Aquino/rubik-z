@@ -22,3 +22,5 @@ First press one of the following keys to choose what to spin:
 - Z = Z-axis, X = Back, D = Middle, V = Front
 
 Then press Left and Right arrows to spin it.
+
+You can press enter to shuffle the cube 10 times.

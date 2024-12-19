@@ -1,4 +1,6 @@
 const std = @import("std");
+const rand = std.crypto.random;
+
 const rl = @import("./raylib.zig");
 
 fn v3_abs(v: rl.Vector3) rl.Vector3 {
@@ -428,68 +430,319 @@ pub fn main() void {
         }
     }
 
-
-    // rl.disable_cursor();
     rl.set_target_fps(60);
+
+    var shuffling = false;
+    var shuffle_count: u32 = 10;
+    var animation_ang: f32 = 0;
 
     while (!rl.window_should_close()) {
         rl.begin_drawing();
             rl.begin_mode_3d(camera);
                 rl.clear_background(rl.Beige);
 
-                if (rl.is_key_down('Q')) {
-                    const start_pos = rl.make_v3(0, -3 * size, 0);
-                    const end_pos = rl.make_v3(0, 3 * size, 0);
-                    rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
+                if (!shuffling) {
+                    if (rl.is_key_down(rl.KeyEnter)) {
+                        shuffling = true;
+                        shuffle_count = 10;
+                        animation_ang = 0;
+                    }
 
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
+                    if (rl.is_key_down('Q')) {
+                        const start_pos = rl.make_v3(0, -3 * size, 0);
+                        const end_pos = rl.make_v3(0, 3 * size, 0);
+                        rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
 
-                        for (&cubes) |*cube| {
-                            cube.begin_animation(ang, Axis.Y);
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                cube.begin_animation(ang, Axis.Y);
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                cube.begin_animation(ang, Axis.Y);
+                            }
                         }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
+                    } else if (rl.is_key_down('A')) {
+                        const start_pos = rl.make_v3(-3 * size, 0, 0);
+                        const end_pos = rl.make_v3(3 * size, 0, 0);
+                        rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
 
-                        for (&cubes) |*cube| {
-                            cube.begin_animation(ang, Axis.Y);
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                cube.begin_animation(ang, Axis.X);
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                cube.begin_animation(ang, Axis.X);
+                            }
+                        }
+                    } else if (rl.is_key_down('Z')) {
+                        const start_pos = rl.make_v3(0, 0, -3 * size);
+                        const end_pos = rl.make_v3(0, 0, 3 * size);
+                        rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                cube.begin_animation(ang, Axis.Z);
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                cube.begin_animation(ang, Axis.Z);
+                            }
                         }
                     }
-                } else if (rl.is_key_down('A')) {
-                    const start_pos = rl.make_v3(-3 * size, 0, 0);
-                    const end_pos = rl.make_v3(3 * size, 0, 0);
-                    rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
 
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
+                    if (rl.is_key_down('V')) {
+                        const start_pos = rl.make_v3(0, 0, (size + gap));
+                        const end_pos = rl.make_v3(0, 0, (size + gap) + 0.02);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
-                        for (&cubes) |*cube| {
-                            cube.begin_animation(ang, Axis.X);
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.z > 0) {
+                                    cube.begin_animation(ang, Axis.Z);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.z > 0) {
+                                    cube.begin_animation(ang, Axis.Z);
+                                }
+                            }
                         }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
+                    } else if (rl.is_key_down('C')) {
+                        const start_pos = rl.make_v3(0, 0, 0);
+                        const end_pos = rl.make_v3(0, 0, 0.02);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
-                        for (&cubes) |*cube| {
-                            cube.begin_animation(ang, Axis.X);
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.z == 0) {
+                                    cube.begin_animation(ang, Axis.Z);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.z == 0) {
+                                    cube.begin_animation(ang, Axis.Z);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('X')) {
+                        const start_pos = rl.make_v3(0, 0, -(size + gap));
+                        const end_pos = rl.make_v3(0, 0, -(size + gap) + 0.02);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.z < 0) {
+                                    cube.begin_animation(ang, Axis.Z);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.z < 0) {
+                                    cube.begin_animation(ang, Axis.Z);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('S')) {
+                        const start_pos = rl.make_v3(-(size + gap), 0, 0);
+                        const end_pos = rl.make_v3(-(size + gap) + 0.02, 0, 0);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.x < 0) {
+                                    cube.begin_animation(ang, Axis.X);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.x < 0) {
+                                    cube.begin_animation(ang, Axis.X);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('D')) {
+                        const start_pos = rl.make_v3(0, 0, 0);
+                        const end_pos = rl.make_v3(0.02, 0, 0);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.x == 0) {
+                                    cube.begin_animation(ang, Axis.X);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.x == 0) {
+                                    cube.begin_animation(ang, Axis.X);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('F')) {
+                        const start_pos = rl.make_v3((size + gap), 0, 0);
+                        const end_pos = rl.make_v3((size + gap) + 0.02, 0, 0);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.x > 0) {
+                                    cube.begin_animation(ang, Axis.X);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.x > 0) {
+                                    cube.begin_animation(ang, Axis.X);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('W')) {
+                        const start_pos = rl.make_v3(0, -(size + gap), 0);
+                        const end_pos = rl.make_v3(0, -(size + gap) + 0.02, 0);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.y < 0) {
+                                    cube.begin_animation(ang, Axis.Y);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.y < 0) {
+                                    cube.begin_animation(ang, Axis.Y);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('E')) {
+                        const start_pos = rl.make_v3(0, 0, 0);
+                        const end_pos = rl.make_v3(0, 0.02, 0);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.y == 0) {
+                                    cube.begin_animation(ang, Axis.Y);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.y == 0) {
+                                    cube.begin_animation(ang, Axis.Y);
+                                }
+                            }
+                        }
+                    } else if (rl.is_key_down('R')) {
+                        const start_pos = rl.make_v3(0, (size + gap), 0);
+                        const end_pos = rl.make_v3(0, (size + gap) + 0.02, 0);
+                        rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
+
+                        if (rl.is_key_pressed(rl.KeyLeft)) {
+                            const ang = std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.y > 0) {
+                                    cube.begin_animation(ang, Axis.Y);
+                                }
+                            }
+                        } else if (rl.is_key_pressed(rl.KeyRight)) {
+                            const ang = -std.math.pi / 2.0;
+
+                            for (&cubes) |*cube| {
+                                if (cube.position.y > 0) {
+                                    cube.begin_animation(ang, Axis.Y);
+                                }
+                            }
                         }
                     }
-                } else if (rl.is_key_down('Z')) {
-                    const start_pos = rl.make_v3(0, 0, -3 * size);
-                    const end_pos = rl.make_v3(0, 0, 3 * size);
-                    rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
+                } else if (animation_ang == 0) {
+                    var ang: f32 = std.math.pi / 2.0;
 
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
+                    if (rand.int(u16) % 2 == 1) {
+                        ang *= -1.0 ;
+                    }
 
-                        for (&cubes) |*cube| {
-                            cube.begin_animation(ang, Axis.Z);
+                    const dir = rand.int(u16) % 9;
+
+                    for (&cubes) |*cube| {
+                        const axis =
+                            switch (dir) {
+                                0 => if (cube.position.x < 0) Axis.X else null,
+                                1 => if (cube.position.x == 0) Axis.X else null,
+                                2 => if (cube.position.x > 0) Axis.X else null,
+                                3 => if (cube.position.y < 0) Axis.Y else null,
+                                4 => if (cube.position.y == 0) Axis.Y else null,
+                                5 => if (cube.position.y > 0) Axis.Y else null,
+                                6 => if (cube.position.z < 0) Axis.Z else null,
+                                7 => if (cube.position.z == 0) Axis.Z else null,
+                                8 => if (cube.position.z > 0) Axis.Z else null,
+                                else => unreachable,
+                            };
+
+                        if (axis) |ax| {
+                            cube.begin_animation(ang, ax);
                         }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
+                    }
 
-                        for (&cubes) |*cube| {
-                            cube.begin_animation(ang, Axis.Z);
-                        }
+                    animation_ang = std.math.pi * 2.0 / 60.0;
+                } else {
+                    if (animation_ang >= std.math.pi / 2.0) {
+                        animation_ang = 0;
+                        shuffle_count -= 1;
+                    } else {
+                        animation_ang += std.math.pi * 2.0 / 60.0;
+                    }
+
+                    if (shuffle_count == 0) {
+                        shuffling = false;
                     }
                 }
 
@@ -498,213 +751,7 @@ pub fn main() void {
                     cube.draw();
                 }
 
-                if (rl.is_key_down('V')) {
-                    const start_pos = rl.make_v3(0, 0, (size + gap));
-                    const end_pos = rl.make_v3(0, 0, (size + gap) + 0.02);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.z > 0) {
-                                cube.begin_animation(ang, Axis.Z);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.z > 0) {
-                                cube.begin_animation(ang, Axis.Z);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('C')) {
-                    const start_pos = rl.make_v3(0, 0, 0);
-                    const end_pos = rl.make_v3(0, 0, 0.02);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.z == 0) {
-                                cube.begin_animation(ang, Axis.Z);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.z == 0) {
-                                cube.begin_animation(ang, Axis.Z);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('X')) {
-                    const start_pos = rl.make_v3(0, 0, -(size + gap));
-                    const end_pos = rl.make_v3(0, 0, -(size + gap) + 0.02);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.z < 0) {
-                                cube.begin_animation(ang, Axis.Z);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.z < 0) {
-                                cube.begin_animation(ang, Axis.Z);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('S')) {
-                    const start_pos = rl.make_v3(-(size + gap), 0, 0);
-                    const end_pos = rl.make_v3(-(size + gap) + 0.02, 0, 0);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.x < 0) {
-                                cube.begin_animation(ang, Axis.X);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.x < 0) {
-                                cube.begin_animation(ang, Axis.X);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('D')) {
-                    const start_pos = rl.make_v3(0, 0, 0);
-                    const end_pos = rl.make_v3(0.02, 0, 0);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.x == 0) {
-                                cube.begin_animation(ang, Axis.X);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.x == 0) {
-                                cube.begin_animation(ang, Axis.X);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('F')) {
-                    const start_pos = rl.make_v3((size + gap), 0, 0);
-                    const end_pos = rl.make_v3((size + gap) + 0.02, 0, 0);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.x > 0) {
-                                cube.begin_animation(ang, Axis.X);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.x > 0) {
-                                cube.begin_animation(ang, Axis.X);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('W')) {
-                    const start_pos = rl.make_v3(0, -(size + gap), 0);
-                    const end_pos = rl.make_v3(0, -(size + gap) + 0.02, 0);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.y < 0) {
-                                cube.begin_animation(ang, Axis.Y);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.y < 0) {
-                                cube.begin_animation(ang, Axis.Y);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('E')) {
-                    const start_pos = rl.make_v3(0, 0, 0);
-                    const end_pos = rl.make_v3(0, 0.02, 0);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.y == 0) {
-                                cube.begin_animation(ang, Axis.Y);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.y == 0) {
-                                cube.begin_animation(ang, Axis.Y);
-                            }
-                        }
-                    }
-                } else if (rl.is_key_down('R')) {
-                    const start_pos = rl.make_v3(0, (size + gap), 0);
-                    const end_pos = rl.make_v3(0, (size + gap) + 0.02, 0);
-                    rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
-
-                    if (rl.is_key_pressed(rl.KeyLeft)) {
-                        const ang = std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.y > 0) {
-                                cube.begin_animation(ang, Axis.Y);
-                            }
-                        }
-                    } else if (rl.is_key_pressed(rl.KeyRight)) {
-                        const ang = -std.math.pi / 2.0;
-
-                        for (&cubes) |*cube| {
-                            if (cube.position.y > 0) {
-                                cube.begin_animation(ang, Axis.Y);
-                            }
-                        }
-                    }
-                }
-
-                // rl.draw_grid(10, 1.0);
-
             rl.end_mode_3d();
-
-        //     rl.clear_background(rl.Blue);
-
-        //     rl.draw_rectangle_rec(rect, rl.Yellow);
         rl.end_drawing();
     }
 }

@@ -53,6 +53,7 @@ pub const KeyLeft = c.KEY_LEFT;
 pub const KeyRight = c.KEY_RIGHT;
 pub const KeyDown = c.KEY_DOWN;
 pub const KeyUp = c.KEY_UP;
+pub const KeyEnter = c.KEY_ENTER;
 
 pub const is_key_pressed = c.IsKeyPressed;
 pub const is_key_down = c.IsKeyDown;
