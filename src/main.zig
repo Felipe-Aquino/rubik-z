@@ -3,6 +3,38 @@ const rand = std.crypto.random;
 
 const rl = @import("./raylib.zig");
 
+// const Y_AXIS_KEY = 'Q';
+// const X_AXIS_KEY = 'A';
+// const Z_AXIS_KEY = 'Z';
+// 
+// const TOP_KEY = 'R';
+// const Y_MIDDLE_KEY = 'E';
+// const BOTTOM_KEY = 'W';
+// 
+// const LEFT_KEY = 'S';
+// const X_MIDDLE_KEY = 'D';
+// const RIGHT_KEY = 'F';
+// 
+// const BACK_KEY = 'X';
+// const Z_MIDDLE_KEY = 'C';
+// const FRONT_KEY = 'V';
+
+const Y_AXIS_KEY = 'A';
+const X_AXIS_KEY = 'S';
+const Z_AXIS_KEY = '_';
+
+const TOP_KEY = 'E';
+const Y_MIDDLE_KEY = '_';
+const BOTTOM_KEY = 'R';
+
+const LEFT_KEY = 'Q';
+const X_MIDDLE_KEY = '_';
+const RIGHT_KEY = 'F';
+
+const BACK_KEY = 'W';
+const Z_MIDDLE_KEY = '_';
+const FRONT_KEY = 'D';
+
 fn v3_abs(v: rl.Vector3) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
@@ -313,6 +345,7 @@ pub fn main() void {
     const screen_width = 800;
     const screen_height = 600;
 
+
     rl.init_window(screen_width, screen_height, "Rubik's");
 
     defer rl.close_window();
@@ -320,7 +353,7 @@ pub fn main() void {
     // const rect = rl.make_rect(300, 200, 200, 200);
 
     var camera: rl.Camera3D = undefined;
-    camera.position = rl.make_v3(12.0, 8.0, 12.0);
+    camera.position = rl.make_v3(9.0, 8.0, 12.0);
     camera.target = rl.make_v3(0.0, 0.0, 0.0);
     camera.up = rl.make_v3(0.0, 1.0, 0.0);
     camera.fovy = 45.0;
@@ -448,7 +481,7 @@ pub fn main() void {
                         animation_ang = 0;
                     }
 
-                    if (rl.is_key_down('Q')) {
+                    if (rl.is_key_down(Y_AXIS_KEY)) {
                         const start_pos = rl.make_v3(0, -3 * size, 0);
                         const end_pos = rl.make_v3(0, 3 * size, 0);
                         rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
@@ -466,7 +499,7 @@ pub fn main() void {
                                 cube.begin_animation(ang, Axis.Y);
                             }
                         }
-                    } else if (rl.is_key_down('A')) {
+                    } else if (rl.is_key_down(X_AXIS_KEY)) {
                         const start_pos = rl.make_v3(-3 * size, 0, 0);
                         const end_pos = rl.make_v3(3 * size, 0, 0);
                         rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
@@ -484,7 +517,7 @@ pub fn main() void {
                                 cube.begin_animation(ang, Axis.X);
                             }
                         }
-                    } else if (rl.is_key_down('Z')) {
+                    } else if (rl.is_key_down(Z_AXIS_KEY)) {
                         const start_pos = rl.make_v3(0, 0, -3 * size);
                         const end_pos = rl.make_v3(0, 0, 3 * size);
                         rl.draw_cylinder_ex(start_pos, end_pos, 0.15, 0.15, 20, rl.Maroon);
@@ -504,7 +537,7 @@ pub fn main() void {
                         }
                     }
 
-                    if (rl.is_key_down('V')) {
+                    if (rl.is_key_down(FRONT_KEY)) {
                         const start_pos = rl.make_v3(0, 0, (size + gap));
                         const end_pos = rl.make_v3(0, 0, (size + gap) + 0.02);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -526,7 +559,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('C')) {
+                    } else if (rl.is_key_down(Z_MIDDLE_KEY)) {
                         const start_pos = rl.make_v3(0, 0, 0);
                         const end_pos = rl.make_v3(0, 0, 0.02);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -548,7 +581,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('X')) {
+                    } else if (rl.is_key_down(BACK_KEY)) {
                         const start_pos = rl.make_v3(0, 0, -(size + gap));
                         const end_pos = rl.make_v3(0, 0, -(size + gap) + 0.02);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -570,7 +603,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('S')) {
+                    } else if (rl.is_key_down(LEFT_KEY)) {
                         const start_pos = rl.make_v3(-(size + gap), 0, 0);
                         const end_pos = rl.make_v3(-(size + gap) + 0.02, 0, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -592,7 +625,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('D')) {
+                    } else if (rl.is_key_down(X_MIDDLE_KEY)) {
                         const start_pos = rl.make_v3(0, 0, 0);
                         const end_pos = rl.make_v3(0.02, 0, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -614,7 +647,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('F')) {
+                    } else if (rl.is_key_down(RIGHT_KEY)) {
                         const start_pos = rl.make_v3((size + gap), 0, 0);
                         const end_pos = rl.make_v3((size + gap) + 0.02, 0, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -636,7 +669,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('W')) {
+                    } else if (rl.is_key_down(BOTTOM_KEY)) {
                         const start_pos = rl.make_v3(0, -(size + gap), 0);
                         const end_pos = rl.make_v3(0, -(size + gap) + 0.02, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -658,7 +691,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('E')) {
+                    } else if (rl.is_key_down(Y_MIDDLE_KEY)) {
                         const start_pos = rl.make_v3(0, 0, 0);
                         const end_pos = rl.make_v3(0, 0.02, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -680,7 +713,7 @@ pub fn main() void {
                                 }
                             }
                         }
-                    } else if (rl.is_key_down('R')) {
+                    } else if (rl.is_key_down(TOP_KEY)) {
                         const start_pos = rl.make_v3(0, (size + gap), 0);
                         const end_pos = rl.make_v3(0, (size + gap) + 0.02, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
@@ -706,7 +739,7 @@ pub fn main() void {
                 } else if (animation_ang == 0) {
                     var ang: f32 = std.math.pi / 2.0;
 
-                    if (rand.int(u16) % 2 == 1) {
+                    if (rand.int(u16) % 9 < 3) {
                         ang *= -1.0 ;
                     }
 
@@ -752,6 +785,7 @@ pub fn main() void {
                 }
 
             rl.end_mode_3d();
+
         rl.end_drawing();
     }
 }

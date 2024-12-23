@@ -17,9 +17,9 @@ $ ./zig-out/bin/rubik
 This application only works with keyboard.
 
 First press one of the following keys to choose what to spin:
-- Q = Y-axis, W = Botom, E = Middle, R = Top
-- A = X-axis, S = Left, D = Middle, F = Right
-- Z = Z-axis, X = Back, D = Middle, V = Front
+- A = Y-axis, R = Botom, E = Top
+- S = X-axis, Q = Left, F = Right
+- W = Back, D = Front
 
 Then press Left and Right arrows to spin it.
 
