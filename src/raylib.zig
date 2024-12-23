@@ -4,6 +4,7 @@ const c = @cImport({
 });
 
 pub const Rectangle = c.Rectangle;
+pub const Vector2 = c.Vector2;
 pub const Vector3 = c.Vector3;
 pub const Color = c.Color;
 
@@ -11,6 +12,7 @@ pub const Yellow = c.YELLOW;
 pub const White = c.WHITE;
 pub const Red = c.RED;
 pub const Blue = c.BLUE;
+pub const Skyblue = c.SKYBLUE;
 pub const Black = c.BLACK;
 pub const Green = c.GREEN;
 pub const Maroon = c.MAROON;
@@ -18,6 +20,8 @@ pub const Orange = c.ORANGE;
 pub const Beige = c.BEIGE;
 pub const Purple = c.PURPLE;
 pub const Magenta = c.MAGENTA;
+
+pub const fade = c.Fade;
 
 pub const init_window = c.InitWindow;
 pub const close_window = c.CloseWindow;
@@ -48,6 +52,8 @@ pub const end_drawing = c.EndDrawing;
 pub const clear_background =c.ClearBackground;
 
 pub const draw_rectangle_rec = c.DrawRectangleRec;
+pub const draw_rectangle = c.DrawRectangle;
+pub const draw_rectangle_lines = c.DrawRectangleLines;
 
 pub const KeyLeft = c.KEY_LEFT;
 pub const KeyRight = c.KEY_RIGHT;
@@ -64,6 +70,35 @@ pub const pop_matrix = c.rlPopMatrix;
 pub const rotatef = c.rlRotatef;
 pub const translatef = c.rlTranslatef;
 
+
+pub const Font = struct {
+    c_font: c.Font,
+    spacing: f32,
+
+    pub fn load_ttf_from_memory(data: []const u8, size: i32, spacing: f32) Font {
+        const data_ptr = @as([*c]const u8, @ptrCast(data));
+        const data_len = @as(i32, @intCast(data.len));
+        const c_font = c.LoadFontFromMemory(".ttf", data_ptr, data_len, size, 0, 0);
+
+        return Font {
+            .c_font = c_font,
+            .spacing = spacing,
+        };
+    }
+
+    pub fn draw_text(self: Font, text: [*:0]const u8, x: f32, y: f32, tint: Color) void {
+        const ptr = @as([*c]const u8, @ptrCast(text));
+        const size = @as(f32, @floatFromInt(self.c_font.baseSize));
+        c.DrawTextEx(self.c_font, ptr, make_v2(x, y), size, self.spacing, tint);
+    }
+
+    pub fn measure_text(self: Font, text: [*:0]const u8) f32 {
+        const ptr = @as([*c]const u8, @ptrCast(text));
+        const size = @as(f32, @floatFromInt(self.c_font.baseSize));
+        return c.MeasureTextEx(self.c_font, ptr, size, self.spacing).x;
+    }
+};
+
 pub fn make_rect(x: f32, y: f32, w: f32, h: f32) Rectangle {
     var rect: c.Rectangle = undefined;
 
@@ -73,6 +108,15 @@ pub fn make_rect(x: f32, y: f32, w: f32, h: f32) Rectangle {
     rect.height = h;
 
     return rect;
+}
+
+pub fn make_v2(x: f32, y: f32) Vector2 {
+    var v2: c.Vector2 = undefined;
+
+    v2.x = x;
+    v2.y = y;
+
+    return v2;
 }
 
 pub fn make_v3(x: f32, y: f32, z: f32) Vector3 {

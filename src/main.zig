@@ -3,6 +3,14 @@ const rand = std.crypto.random;
 
 const rl = @import("./raylib.zig");
 
+inline fn as_f32(v: i32) f32 {
+    return @as(f32, @floatFromInt(v));
+}
+
+inline fn as_i32(v: f32) i32 {
+    return @as(i32, @intFromFloat(v));
+}
+
 // const Y_AXIS_KEY = 'Q';
 // const X_AXIS_KEY = 'A';
 // const Z_AXIS_KEY = 'Z';
@@ -34,6 +42,11 @@ const RIGHT_KEY = 'F';
 const BACK_KEY = 'W';
 const Z_MIDDLE_KEY = '_';
 const FRONT_KEY = 'D';
+
+const screen_width = 800;
+const screen_height = 600;
+
+const font_data = @embedFile("./assets/Inconsolata-Regular.ttf");
 
 fn v3_abs(v: rl.Vector3) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
@@ -341,16 +354,51 @@ const Cube = struct {
     }
 };
 
+fn draw_info_box(font16: rl.Font, font18: rl.Font) void {
+    const w: f32 = 407.0;
+    const h: f32 = 114.0;
+
+    const x: f32 = 10;
+    const y: f32 = 10;
+
+    rl.draw_rectangle(x, y, w, h, rl.fade(rl.Skyblue, 0.7));
+    rl.draw_rectangle_lines(x, y, w, h, rl.Blue);
+
+    const x1 = x + 7; 
+
+    font16.draw_text("A: Y Axis", x1, y + 31, rl.Black);
+    font16.draw_text("S: X Axis", x1, y + 48, rl.Black);
+    font16.draw_text("E: Top", x1, y + 65, rl.Black);
+    font16.draw_text("R: Bottom", x1, y + 82, rl.Black);
+
+    const pad1 = font16.measure_text("R: Bottom");
+    const x2 = x1 + 32 + pad1; 
+
+    font16.draw_text("D: Front", x2, y + 31, rl.Black);
+    font16.draw_text("W: Back", x2, y + 48, rl.Black);
+    font16.draw_text("Q: Left", x2, y + 65, rl.Black);
+    font16.draw_text("F: Right", x2, y + 82, rl.Black);
+
+    const pad2 = font16.measure_text("R: Front");
+    const x3 = x2 + 32 + pad2; 
+
+    font16.draw_text("Right Arrow: Spin CW", x3, y + 31, rl.Black);
+    font16.draw_text("Left Arrow: Spin CCW", x3, y + 48, rl.Black);
+    font16.draw_text("Enter: Shuffles 10 times", x3, y + 82, rl.Black);
+
+    font18.draw_text("Select", x1 + 20 + pad1 / 2, y + 6, rl.Black);
+    font18.draw_text("Action", x3 + 30 + pad1 / 2, y + 6, rl.Black);
+
+    rl.draw_rectangle_lines(as_i32(x3 - 12.0), y + 18, 1, h - 22, rl.Blue);
+}
+
 pub fn main() void {
-    const screen_width = 800;
-    const screen_height = 600;
-
-
     rl.init_window(screen_width, screen_height, "Rubik's");
 
     defer rl.close_window();
 
-    // const rect = rl.make_rect(300, 200, 200, 200);
+    const font16 = rl.Font.load_ttf_from_memory(font_data, 16, 1);
+    const font18 = rl.Font.load_ttf_from_memory(font_data, 18, 1);
 
     var camera: rl.Camera3D = undefined;
     camera.position = rl.make_v3(9.0, 8.0, 12.0);
@@ -469,10 +517,16 @@ pub fn main() void {
     var shuffle_count: u32 = 10;
     var animation_ang: f32 = 0;
 
+    var show_help = false;
+
     while (!rl.window_should_close()) {
         rl.begin_drawing();
             rl.begin_mode_3d(camera);
                 rl.clear_background(rl.Beige);
+
+                if (rl.is_key_pressed('H')) {
+                    show_help = !show_help;
+                }
 
                 if (!shuffling) {
                     if (rl.is_key_down(rl.KeyEnter)) {
@@ -786,6 +840,11 @@ pub fn main() void {
 
             rl.end_mode_3d();
 
+            if (show_help) {
+                draw_info_box(font16, font18);
+            } else {
+                font18.draw_text("Press H for help", 10, 10, rl.Black);
+            }
         rl.end_drawing();
     }
 }
