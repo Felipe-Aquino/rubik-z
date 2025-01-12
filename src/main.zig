@@ -58,17 +58,15 @@ fn v3_abs(v: rl.Vector3) rl.Vector3 {
     return v2;
 }
 
-fn fix_zero(x: f32) f32 {
-    const err = 1e-7;
-    if (-err < x and x < err) return 0;
-    return x;
+fn rouding(x: f32) f32 {
+    return @round(1e6 * x) / 1e6;
 }
 
 fn v3_rotate_z(v: rl.Vector3, angle: f32) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
-    v2.x = fix_zero(v.x * @cos(angle) - v.y * @sin(angle));
-    v2.y = fix_zero(v.x * @sin(angle) + v.y * @cos(angle));
+    v2.x = rouding(v.x * @cos(angle) - v.y * @sin(angle));
+    v2.y = rouding(v.x * @sin(angle) + v.y * @cos(angle));
     v2.z = v.z;
 
     return v2;
@@ -77,9 +75,9 @@ fn v3_rotate_z(v: rl.Vector3, angle: f32) rl.Vector3 {
 fn v3_rotate_y(v: rl.Vector3, angle: f32) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
-    v2.x = fix_zero(v.x * @cos(angle) - v.z * @sin(angle));
+    v2.x = rouding(v.x * @cos(angle) - v.z * @sin(angle));
     v2.y = v.y;
-    v2.z = fix_zero(v.x * @sin(angle) + v.z * @cos(angle));
+    v2.z = rouding(v.x * @sin(angle) + v.z * @cos(angle));
 
     return v2;
 }
@@ -88,8 +86,8 @@ fn v3_rotate_x(v: rl.Vector3, angle: f32) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
 
     v2.x = v.x;
-    v2.y = fix_zero(v.y * @cos(angle) - v.z * @sin(angle));
-    v2.z = fix_zero(v.y * @sin(angle) + v.z * @cos(angle));
+    v2.y = rouding(v.y * @cos(angle) - v.z * @sin(angle));
+    v2.z = rouding(v.y * @sin(angle) + v.z * @cos(angle));
 
     return v2;
 }
@@ -393,6 +391,7 @@ fn draw_info_box(font16: rl.Font, font18: rl.Font) void {
 }
 
 pub fn main() void {
+    rl.set_config_flags(rl.FLAG_VSYNC_HINT);
     rl.init_window(screen_width, screen_height, "Rubik's");
 
     defer rl.close_window();

@@ -27,8 +27,10 @@ pub const init_window = c.InitWindow;
 pub const close_window = c.CloseWindow;
 pub const set_target_fps = c.SetTargetFPS;
 pub const window_should_close = c.WindowShouldClose;
-
 pub const disable_cursor = c.DisableCursor;
+
+pub const FLAG_VSYNC_HINT = c.FLAG_VSYNC_HINT;
+pub const set_config_flags = c.SetConfigFlags;
 
 pub const CAMERA_PERSPECTIVE = c.CAMERA_PERSPECTIVE;
 pub const CAMERA_ORTHOGRAPHIC = c.CAMERA_ORTHOGRAPHIC;
