@@ -46,6 +46,22 @@ const FRONT_KEY = 'D';
 const screen_width = 800;
 const screen_height = 600;
 
+// Normalized sizes of the textures as its coordinates goes for 0.0f to 1.0f
+const tile_size_x = 1.0 / 3.0;
+const tile_size_y = 1.0 / 2.0;
+
+const uv_face_coords = [7]rl.Rectangle{
+    rl.make_rect(                0,           0, 1.0/50.0,    1.0/50.0),    // Black
+    rl.make_rect(                0,           0, tile_size_x, tile_size_y), // White
+    rl.make_rect(      tile_size_x,           0, tile_size_x, tile_size_y), // Green
+    rl.make_rect(2.0 * tile_size_x,           0, tile_size_x, tile_size_y), // Red
+    rl.make_rect(                0, tile_size_y, tile_size_x, tile_size_y), // Blue
+    rl.make_rect(      tile_size_x, tile_size_y, tile_size_x, tile_size_y), // Orange
+    rl.make_rect(2.0 * tile_size_x, tile_size_y, tile_size_x, tile_size_y), // Yellow
+};
+
+var cube_texture: rl.Texture2D = undefined;
+
 const font_data = @embedFile("./assets/Inconsolata-Regular.ttf");
 
 fn v3_abs(v: rl.Vector3) rl.Vector3 {
@@ -107,7 +123,7 @@ fn draw_rotated_cube(
 
 const Face = struct {
     direction: rl.Vector3,
-    color: rl.Color,
+    texture_idx: usize,
 };
 
 const Faces = union(enum) {
@@ -120,21 +136,21 @@ const Faces = union(enum) {
         return Faces { .zero = void{} };
     }
 
-    fn make_one(dir: rl.Vector3, c: rl.Color) Faces {
+    fn make_one(dir: rl.Vector3, t: usize) Faces {
         return Faces {
             .one = Face {
                 .direction = dir,
-                .color = c,
+                .texture_idx = t,
             }
         };
     }
 
     fn make_two(
-        dir1: rl.Vector3, c1: rl.Color,
-        dir2: rl.Vector3, c2: rl.Color
+        dir1: rl.Vector3, t1: usize,
+        dir2: rl.Vector3, t2: usize
     ) Faces {
-        const f1 = Face { .direction = dir1, .color = c1 };
-        const f2 = Face { .direction = dir2, .color = c2 };
+        const f1 = Face { .direction = dir1, .texture_idx = t1 };
+        const f2 = Face { .direction = dir2, .texture_idx = t2 };
 
         return Faces {
             .two = [2]Face{ f1, f2 }
@@ -142,17 +158,179 @@ const Faces = union(enum) {
     }
 
     fn make_three(
-        dir1: rl.Vector3, c1: rl.Color,
-        dir2: rl.Vector3, c2: rl.Color,
-        dir3: rl.Vector3, c3: rl.Color
+        dir1: rl.Vector3, t1: usize,
+        dir2: rl.Vector3, t2: usize,
+        dir3: rl.Vector3, t3: usize
     ) Faces {
-        const f1 = Face { .direction = dir1, .color = c1 };
-        const f2 = Face { .direction = dir2, .color = c2 };
-        const f3 = Face { .direction = dir3, .color = c3 };
+        const f1 = Face { .direction = dir1, .texture_idx = t1 };
+        const f2 = Face { .direction = dir2, .texture_idx = t2 };
+        const f3 = Face { .direction = dir3, .texture_idx = t3 };
 
         return Faces {
             .three = [3]Face{ f1, f2, f3 }
         };
+    }
+
+    fn top(faces: *const Faces) rl.Rectangle {
+        switch (faces.*) {
+            .one => |*f| {
+                if (f.direction.y > 0) {
+                    return uv_face_coords[f.texture_idx];
+                }
+            },
+            .two => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.y > 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            .three => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.y > 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            else => {},
+        }
+
+        return uv_face_coords[0];
+    }
+
+    fn bottom(faces: *const Faces) rl.Rectangle {
+        switch (faces.*) {
+            .one => |*f| {
+                if (f.direction.y < 0) {
+                    return uv_face_coords[f.texture_idx];
+                }
+            },
+            .two => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.y < 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            .three => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.y < 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            else => {},
+        }
+
+        return uv_face_coords[0];
+    }
+
+    fn front(faces: *const Faces) rl.Rectangle {
+        switch (faces.*) {
+            .one => |*f| {
+                if (f.direction.z > 0) {
+                    return uv_face_coords[f.texture_idx];
+                }
+            },
+            .two => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.z > 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            .three => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.z > 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            else => {},
+        }
+
+        return uv_face_coords[0];
+    }
+
+    fn back(faces: *const Faces) rl.Rectangle {
+        switch (faces.*) {
+            .one => |*f| {
+                if (f.direction.z < 0) {
+                    return uv_face_coords[f.texture_idx];
+                }
+            },
+            .two => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.z < 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            .three => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.z < 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            else => {},
+        }
+
+        return uv_face_coords[0];
+    }
+
+    fn left(faces: *const Faces) rl.Rectangle {
+        switch (faces.*) {
+            .one => |*f| {
+                if (f.direction.x < 0) {
+                    return uv_face_coords[f.texture_idx];
+                }
+            },
+            .two => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.x < 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            .three => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.x < 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            else => {},
+        }
+
+        return uv_face_coords[0];
+    }
+
+    fn right(faces: *const Faces) rl.Rectangle {
+        switch (faces.*) {
+            .one => |*f| {
+                if (f.direction.x > 0) {
+                    return uv_face_coords[f.texture_idx];
+                }
+            },
+            .two => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.x > 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            .three => |*fs| {
+                for (fs) |f| {
+                    if (f.direction.x > 0) {
+                        return uv_face_coords[f.texture_idx];
+                    }
+                }
+            },
+            else => {},
+        }
+
+        return uv_face_coords[0];
     }
 };
 
@@ -245,85 +423,20 @@ const Cube = struct {
     }
 
     fn draw(cube: Cube) void {
-        if (cube.animation.active) {
-            const axis =
-                switch (cube.animation.axis) {
-                    .X => rl.make_v3(1, 0, 0),
-                    .Y => rl.make_v3(0, -1, 0),
-                    .Z => rl.make_v3(0, 0, 1),
-                };
+        // if (cube.animation.active) {
+        //     const axis =
+        //         switch (cube.animation.axis) {
+        //             .X => rl.make_v3(1, 0, 0),
+        //             .Y => rl.make_v3(0, -1, 0),
+        //             .Z => rl.make_v3(0, 0, 1),
+        //         };
 
-            const s = rl.make_v3(2.0, 2.0, 2.0);
-            draw_rotated_cube(cube.position, axis, s, cube.animation.angle, rl.Black);
-        } else {
-            rl.draw_cube(cube.position, 2.0, 2.0, 2.0, rl.Black);
-        }
-        // rl.draw_cube_wires(position, 2.0, 2.0, 2.0, rl.Black);
-
-        const face_sz = rl.make_v3(1.6, 1.6, 1.6);
-        const factor = -1.5;
-
-        switch (cube.faces) {
-            .one => |f| {
-                const p = rl.v3_add(cube.position, f.direction);
-                const n = v3_abs(f.direction);
-                const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-
-                if (cube.animation.active) {
-                    const axis =
-                        switch (cube.animation.axis) {
-                            .X => rl.make_v3(1, 0, 0),
-                            .Y => rl.make_v3(0, -1, 0),
-                            .Z => rl.make_v3(0, 0, 1),
-                        };
-
-                    draw_rotated_cube(p, axis, s, cube.animation.angle, f.color);
-                } else {
-                    rl.draw_cube(p, s.x, s.y, s.z, f.color);
-                }
-            },
-            .two => |fs| {
-                for (fs) |f| {
-                    const p = rl.v3_add(cube.position, f.direction);
-                    const n = v3_abs(f.direction);
-                    const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-
-                    if (cube.animation.active) {
-                        const axis =
-                            switch (cube.animation.axis) {
-                                .X => rl.make_v3(1, 0, 0),
-                                .Y => rl.make_v3(0, -1, 0),
-                                .Z => rl.make_v3(0, 0, 1),
-                            };
-
-                        draw_rotated_cube(p, axis, s, cube.animation.angle, f.color);
-                    } else {
-                        rl.draw_cube(p, s.x, s.y, s.z, f.color);
-                    }
-                }
-            },
-            .three => |fs| {
-                for (fs) |f| {
-                    const p = rl.v3_add(cube.position, f.direction);
-                    const n = v3_abs(f.direction);
-                    const s = rl.v3_add(face_sz, rl.v3_times(n, factor));
-
-                    if (cube.animation.active) {
-                        const axis =
-                            switch (cube.animation.axis) {
-                                .X => rl.make_v3(1, 0, 0),
-                                .Y => rl.make_v3(0, -1, 0),
-                                .Z => rl.make_v3(0, 0, 1),
-                            };
-
-                        draw_rotated_cube(p, axis, s, cube.animation.angle, f.color);
-                    } else {
-                        rl.draw_cube(p, s.x, s.y, s.z, f.color);
-                    }
-                }
-            },
-            else => {},
-        }
+        //     const s = rl.make_v3(2.0, 2.0, 2.0);
+        //     draw_rotated_cube(cube.position, axis, s, cube.animation.angle, rl.Black);
+        // } else {
+            const rots = rl.make_v3(0, 0, 0);
+            draw_cube_texture2(&cube.faces, cube.position, rots, 2.0);
+        // }
     }
 
     fn begin_animation(cube: *Cube, angle: f32, axis: Axis) void {
@@ -396,6 +509,9 @@ pub fn main() void {
 
     defer rl.close_window();
 
+    cube_texture = rl.load_texture("textures.png");
+    defer rl.unload_texture(cube_texture);
+
     const font16 = rl.Font.load_ttf_from_memory(font_data, 16, 1);
     const font18 = rl.Font.load_ttf_from_memory(font_data, 18, 1);
 
@@ -420,10 +536,10 @@ pub fn main() void {
             0.0,
         );
 
-        const x_face_color = switch (i) {
-            0 => rl.Green,
-            2 => rl.Blue,
-            else => rl.Black,
+        const x_face_color: usize = switch (i) {
+            0 => 2,
+            2 => 4,
+            else => 0,
         };
 
         for (0..3) |j| {
@@ -433,10 +549,10 @@ pub fn main() void {
                 0.0,
             );
 
-            const y_face_color = switch (j) {
-                0 => rl.Red,
-                2 => rl.Orange,
-                else => rl.Black,
+            const y_face_color: usize = switch (j) {
+                0 => 3,
+                2 => 5,
+                else => 0,
             };
 
             for (0..3) |k| {
@@ -446,10 +562,10 @@ pub fn main() void {
                     @as(f32, @floatFromInt(k)) - 1.0,
                 );
 
-                const z_face_color = switch (k) {
-                    0 => rl.Yellow,
-                    2 => rl.White,
-                    else => rl.Black,
+                const z_face_color: usize = switch (k) {
+                    0 => 6,
+                    2 => 1,
+                    else => 1,
                 };
 
                 var faces: Faces = Faces.make_zero();
@@ -846,4 +962,112 @@ pub fn main() void {
             }
         rl.end_drawing();
     }
+}
+
+fn draw_cube_texture2(
+    faces: *const Faces,
+    position: rl.Vector3,
+    rotations: rl.Vector3,
+    size: f32) void
+{
+    const texture = cube_texture;
+
+    const half_size = size / 2.0;
+
+    var source: rl.Rectangle = undefined;
+
+    // Set desired texture to be enabled while drawing following vertex data
+    rl.set_texture(texture.id);
+
+    rl.push_matrix();
+        rl.rotatef(rotations.x, 1, 0, 0);
+        rl.rotatef(-rotations.y, 0, 1, 0);
+        rl.rotatef(rotations.z, 0, 0, 1);
+        rl.translatef(position.x, position.y, position.z);
+
+        rl.begin(rl.RL_QUADS);
+            rl.color_4ub(255, 255, 255, 255);
+
+            source = faces.front();
+
+            // Front face
+            rl.normal3f(0.0, 0.0, 1.0);
+            rl.tex_coord2f(source.x, source.y + source.height);
+            rl.vertex3f(-half_size, -half_size, half_size);
+            rl.tex_coord2f(source.x + source.width, source.y + source.height);
+            rl.vertex3f(half_size, -half_size, half_size);
+            rl.tex_coord2f(source.x + source.width, source.y);
+            rl.vertex3f(half_size, half_size, half_size);
+            rl.tex_coord2f(source.x, source.y);
+            rl.vertex3f(-half_size, half_size, half_size);
+
+            source = faces.back();
+
+            // Back face
+            rl.normal3f(0.0, 0.0, -1.0);
+            rl.tex_coord2f(source.x + source.width, source.y + source.height);
+            rl.vertex3f(-half_size, -half_size, -half_size);
+            rl.tex_coord2f(source.x + source.width, source.y);
+            rl.vertex3f(-half_size, half_size, -half_size);
+            rl.tex_coord2f(source.x, source.y);
+            rl.vertex3f(half_size, half_size, -half_size);
+            rl.tex_coord2f(source.x, source.y + source.height);
+            rl.vertex3f(half_size, -half_size, -half_size);
+
+            source = faces.top();
+
+            // Top face
+            rl.normal3f(0.0, 1.0, 0.0);
+            rl.tex_coord2f(source.x, source.y);
+            rl.vertex3f(-half_size, half_size, -half_size);
+            rl.tex_coord2f(source.x, source.y + source.height);
+            rl.vertex3f(-half_size, half_size, half_size);
+            rl.tex_coord2f(source.x + source.width, source.y + source.height);
+            rl.vertex3f(half_size, half_size, half_size);
+            rl.tex_coord2f(source.x + source.width, source.y);
+            rl.vertex3f(half_size, half_size, -half_size);
+
+            source = faces.bottom();
+
+            // Bottom face
+            rl.normal3f(0.0, -1.0, 0.0);
+            rl.tex_coord2f(source.x + source.width, source.y);
+            rl.vertex3f(-half_size, -half_size, -half_size);
+            rl.tex_coord2f(source.x, source.y);
+            rl.vertex3f(half_size, -half_size, -half_size);
+            rl.tex_coord2f(source.x, source.y + source.height);
+            rl.vertex3f(half_size, -half_size, half_size);
+            rl.tex_coord2f(source.x + source.width, source.y + source.height);
+            rl.vertex3f(-half_size, -half_size, half_size);
+
+            source = faces.right();
+
+            // Right face
+            rl.normal3f(1.0, 0.0, 0.0);
+            rl.tex_coord2f(source.x + source.width, source.y + source.height);
+            rl.vertex3f(half_size, -half_size, -half_size);
+            rl.tex_coord2f(source.x + source.width, source.y);
+            rl.vertex3f(half_size, half_size, -half_size);
+            rl.tex_coord2f(source.x, source.y);
+            rl.vertex3f(half_size, half_size, half_size);
+            rl.tex_coord2f(source.x, source.y + source.height);
+            rl.vertex3f(half_size, -half_size, half_size);
+
+            source = faces.left();
+
+            // Left face
+            rl.normal3f(-1.0, 0.0, 0.0);
+            rl.tex_coord2f(source.x, source.y + source.height);
+            rl.vertex3f(-half_size, -half_size, -half_size);
+            rl.tex_coord2f(source.x + source.width, source.y + source.height);
+            rl.vertex3f(-half_size, -half_size, half_size);
+            rl.tex_coord2f(source.x + source.width, source.y);
+            rl.vertex3f(-half_size, half_size, half_size);
+            rl.tex_coord2f(source.x, source.y);
+            rl.vertex3f(-half_size, half_size, -half_size);
+        rl.end();
+
+    rl.pop_matrix();
+
+    rl.set_texture(0);
 }

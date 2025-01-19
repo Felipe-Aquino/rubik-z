@@ -3,6 +3,7 @@ const c = @cImport({
     @cInclude("rlgl.h");
 });
 
+pub const Texture2D = c.Texture2D;
 pub const Rectangle = c.Rectangle;
 pub const Vector2 = c.Vector2;
 pub const Vector3 = c.Vector3;
@@ -72,6 +73,18 @@ pub const pop_matrix = c.rlPopMatrix;
 pub const rotatef = c.rlRotatef;
 pub const translatef = c.rlTranslatef;
 
+pub const RL_QUADS = c.RL_QUADS;
+
+pub const begin = c.rlBegin;
+pub const end = c.rlEnd;
+pub const color_4ub = c.rlColor4ub;
+pub const normal3f = c.rlNormal3f;
+pub const tex_coord2f = c.rlTexCoord2f;
+pub const vertex3f = c.rlVertex3f;
+
+pub const set_texture = c.rlSetTexture;
+pub const load_texture = c.LoadTexture;
+pub const unload_texture = c.UnloadTexture;
 
 pub const Font = struct {
     c_font: c.Font,
