@@ -423,20 +423,20 @@ const Cube = struct {
     }
 
     fn draw(cube: Cube) void {
-        // if (cube.animation.active) {
-        //     const axis =
-        //         switch (cube.animation.axis) {
-        //             .X => rl.make_v3(1, 0, 0),
-        //             .Y => rl.make_v3(0, -1, 0),
-        //             .Z => rl.make_v3(0, 0, 1),
-        //         };
+        if (cube.animation.active) {
+            const angle = cube.animation.angle * 180 / std.math.pi; 
+            const rots =
+                switch (cube.animation.axis) {
+                    .X => rl.make_v3(angle, 0, 0),
+                    .Y => rl.make_v3(0, angle, 0),
+                    .Z => rl.make_v3(0, 0, angle),
+                };
 
-        //     const s = rl.make_v3(2.0, 2.0, 2.0);
-        //     draw_rotated_cube(cube.position, axis, s, cube.animation.angle, rl.Black);
-        // } else {
+            draw_cube_texture2(&cube.faces, cube.position, rots, 2.0);
+        } else {
             const rots = rl.make_v3(0, 0, 0);
             draw_cube_texture2(&cube.faces, cube.position, rots, 2.0);
-        // }
+        }
     }
 
     fn begin_animation(cube: *Cube, angle: f32, axis: Axis) void {
