@@ -63,6 +63,7 @@ const uv_face_coords = [7]rl.Rectangle{
 var cube_texture: rl.Texture2D = undefined;
 
 const font_data = @embedFile("./assets/Inconsolata-Regular.ttf");
+const img_textures = @embedFile("./assets/textures.png");
 
 fn v3_abs(v: rl.Vector3) rl.Vector3 {
     var v2: rl.Vector3 = undefined;
@@ -106,19 +107,6 @@ fn v3_rotate_x(v: rl.Vector3, angle: f32) rl.Vector3 {
     v2.z = rouding(v.y * @sin(angle) + v.z * @cos(angle));
 
     return v2;
-}
-
-fn draw_rotated_cube(
-    at: rl.Vector3,
-    axis: rl.Vector3,
-    sz: rl.Vector3,
-    ang: f32, c: rl.Color) void
-{
-    rl.push_matrix();
-    rl.rotatef(ang * 180 / std.math.pi, axis.x, axis.y, axis.z);
-    rl.translatef(at.x, at.y, at.z);
-    rl.draw_cube(rl.make_v3(0, 0, 0), sz.x, sz.y, sz.z, c);
-    rl.pop_matrix();
 }
 
 const Face = struct {
@@ -432,10 +420,10 @@ const Cube = struct {
                     .Z => rl.make_v3(0, 0, angle),
                 };
 
-            draw_cube_texture2(&cube.faces, cube.position, rots, 2.0);
+            draw_cube_texture(&cube.faces, cube.position, rots, 2.0);
         } else {
             const rots = rl.make_v3(0, 0, 0);
-            draw_cube_texture2(&cube.faces, cube.position, rots, 2.0);
+            draw_cube_texture(&cube.faces, cube.position, rots, 2.0);
         }
     }
 
@@ -509,7 +497,7 @@ pub fn main() void {
 
     defer rl.close_window();
 
-    cube_texture = rl.load_texture("textures.png");
+    cube_texture = rl.load_texture_from_memory(img_textures);
     defer rl.unload_texture(cube_texture);
 
     const font16 = rl.Font.load_ttf_from_memory(font_data, 16, 1);
@@ -964,7 +952,7 @@ pub fn main() void {
     }
 }
 
-fn draw_cube_texture2(
+fn draw_cube_texture(
     faces: *const Faces,
     position: rl.Vector3,
     rotations: rl.Vector3,

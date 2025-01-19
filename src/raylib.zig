@@ -114,6 +114,15 @@ pub const Font = struct {
     }
 };
 
+pub fn load_texture_from_memory(data: []const u8) Texture2D {
+    const data_ptr = @as([*c]const u8, @ptrCast(data));
+    const data_len = @as(i32, @intCast(data.len));
+
+    const img = c.LoadImageFromMemory(".png", data_ptr, data_len);
+
+    return c.LoadTextureFromImage(img);
+}
+
 pub fn make_rect(x: f32, y: f32, w: f32, h: f32) Rectangle {
     var rect: c.Rectangle = undefined;
 
