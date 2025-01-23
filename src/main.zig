@@ -513,7 +513,6 @@ pub fn main() void {
     var cubes: [27]Cube = undefined;
 
     const size = 2.0;
-    const gap = 0.0;
 
     var pos: usize = 0;
 
@@ -598,9 +597,9 @@ pub fn main() void {
                 }
 
                 const position = rl.make_v3(
-                    (@as(f32, @floatFromInt(i)) - 1.0) * (size + gap),
-                    (@as(f32, @floatFromInt(j)) - 1.0) * (size + gap),
-                    (@as(f32, @floatFromInt(k)) - 1.0) * (size + gap),
+                    (@as(f32, @floatFromInt(i)) - 1.0) * size,
+                    (@as(f32, @floatFromInt(j)) - 1.0) * size,
+                    (@as(f32, @floatFromInt(k)) - 1.0) * size,
                 );
 
                 cubes[pos] = Cube {
@@ -695,8 +694,8 @@ pub fn main() void {
                     }
 
                     if (rl.is_key_down(FRONT_KEY)) {
-                        const start_pos = rl.make_v3(0, 0, (size + gap));
-                        const end_pos = rl.make_v3(0, 0, (size + gap) + 0.02);
+                        const start_pos = rl.make_v3(0, 0, size);
+                        const end_pos = rl.make_v3(0, 0, size + 0.02);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
                         if (rl.is_key_pressed(rl.KeyLeft)) {
@@ -739,8 +738,8 @@ pub fn main() void {
                             }
                         }
                     } else if (rl.is_key_down(BACK_KEY)) {
-                        const start_pos = rl.make_v3(0, 0, -(size + gap));
-                        const end_pos = rl.make_v3(0, 0, -(size + gap) + 0.02);
+                        const start_pos = rl.make_v3(0, 0, -size);
+                        const end_pos = rl.make_v3(0, 0, -size + 0.02);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
                         if (rl.is_key_pressed(rl.KeyLeft)) {
@@ -761,8 +760,8 @@ pub fn main() void {
                             }
                         }
                     } else if (rl.is_key_down(LEFT_KEY)) {
-                        const start_pos = rl.make_v3(-(size + gap), 0, 0);
-                        const end_pos = rl.make_v3(-(size + gap) + 0.02, 0, 0);
+                        const start_pos = rl.make_v3(-size, 0, 0);
+                        const end_pos = rl.make_v3(-size + 0.02, 0, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
                         if (rl.is_key_pressed(rl.KeyLeft)) {
@@ -805,8 +804,8 @@ pub fn main() void {
                             }
                         }
                     } else if (rl.is_key_down(RIGHT_KEY)) {
-                        const start_pos = rl.make_v3((size + gap), 0, 0);
-                        const end_pos = rl.make_v3((size + gap) + 0.02, 0, 0);
+                        const start_pos = rl.make_v3(size, 0, 0);
+                        const end_pos = rl.make_v3(size + 0.02, 0, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
                         if (rl.is_key_pressed(rl.KeyLeft)) {
@@ -827,8 +826,8 @@ pub fn main() void {
                             }
                         }
                     } else if (rl.is_key_down(BOTTOM_KEY)) {
-                        const start_pos = rl.make_v3(0, -(size + gap), 0);
-                        const end_pos = rl.make_v3(0, -(size + gap) + 0.02, 0);
+                        const start_pos = rl.make_v3(0, -size, 0);
+                        const end_pos = rl.make_v3(0, -size + 0.02, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
                         if (rl.is_key_pressed(rl.KeyLeft)) {
@@ -871,8 +870,8 @@ pub fn main() void {
                             }
                         }
                     } else if (rl.is_key_down(TOP_KEY)) {
-                        const start_pos = rl.make_v3(0, (size + gap), 0);
-                        const end_pos = rl.make_v3(0, (size + gap) + 0.02, 0);
+                        const start_pos = rl.make_v3(0, size, 0);
+                        const end_pos = rl.make_v3(0, size + 0.02, 0);
                         rl.draw_cylinder_wires_ex(start_pos, end_pos, 4.5, 4.5, 40, rl.Magenta);
 
                         if (rl.is_key_pressed(rl.KeyLeft)) {
