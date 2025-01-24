@@ -41,6 +41,8 @@ pub const CAMERA_THIRD_PERSON = c.CAMERA_THIRD_PERSON;
 pub const Camera3D = c.Camera3D;
 pub const update_camera = c.UpdateCamera;
 
+pub const viewport = c.rlViewport;
+
 pub const begin_mode_3d = c.BeginMode3D;
 pub const end_mode_3d = c.EndMode3D;
 
