@@ -511,11 +511,17 @@ pub fn main() void {
     camera.projection = rl.CAMERA_PERSPECTIVE;
 
     var back_camera: rl.Camera3D = undefined;
-    back_camera.position = rl.make_v3(-9.0, -8.0, -12.0);
+    // back_camera.position = rl.make_v3(-9.0, -8.0, -12.0);
+    back_camera.position = rl.make_v3(-9.0, -7.0, -9.0);
     back_camera.target = rl.make_v3(0.0, 0.0, 0.0);
     back_camera.up = rl.make_v3(0.0, 1.0, 0.0);
     back_camera.fovy = 45.0;
     back_camera.projection = rl.CAMERA_PERSPECTIVE;
+
+    const flipped_cube_back = rl.load_render_texture(
+        screen_width / 4,
+        screen_height / 4
+    );
 
     var cubes: [27]Cube = undefined;
 
@@ -630,7 +636,6 @@ pub fn main() void {
 
     while (!rl.window_should_close()) {
         rl.begin_drawing();
-            rl.viewport(0, 0, screen_width, screen_height);
             rl.begin_mode_3d(camera);
                 rl.clear_background(rl.Beige);
 
@@ -951,14 +956,27 @@ pub fn main() void {
                 for (&cubes) |*cube| {
                     cube.draw();
                 }
+
             rl.end_mode_3d();
 
-            rl.viewport(3 * screen_width / 4, 3 * screen_height / 4, screen_width / 4, screen_height / 4);
-            rl.begin_mode_3d(back_camera);
-                for (&cubes) |*cube| {
-                    cube.draw();
-                }
-            rl.end_mode_3d();
+            rl.begin_texture_mode(flipped_cube_back);
+                rl.clear_background(rl.Beige);
+
+                rl.begin_mode_3d(back_camera);
+                    for (&cubes) |*cube| {
+                        cube.draw();
+                    }
+                rl.end_mode_3d();
+            rl.end_texture_mode();
+
+            rl.draw_texture_pro(
+                flipped_cube_back.texture,
+                rl.make_rect(0, 0, -screen_width / 4, -screen_height / 4),
+                rl.make_rect(3 * screen_width / 4, 0, screen_width / 4, screen_height / 4),
+                rl.make_v2(0, 0),
+                0,
+                rl.White
+            );
 
             if (show_help) {
                 draw_info_box(font16, font18);

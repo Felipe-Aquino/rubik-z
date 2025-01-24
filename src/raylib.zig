@@ -72,6 +72,7 @@ pub const is_key_down = c.IsKeyDown;
 // -- rlgl
 pub const push_matrix = c.rlPushMatrix;
 pub const pop_matrix = c.rlPopMatrix;
+pub const scalef = c.rlScalef;
 pub const rotatef = c.rlRotatef;
 pub const translatef = c.rlTranslatef;
 
@@ -87,6 +88,11 @@ pub const vertex3f = c.rlVertex3f;
 pub const set_texture = c.rlSetTexture;
 pub const load_texture = c.LoadTexture;
 pub const unload_texture = c.UnloadTexture;
+
+pub const load_render_texture = c.LoadRenderTexture;
+pub const begin_texture_mode = c.BeginTextureMode;
+pub const end_texture_mode = c.EndTextureMode;
+pub const draw_texture_pro = c.DrawTexturePro;
 
 pub const Font = struct {
     c_font: c.Font,
